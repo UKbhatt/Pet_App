@@ -6,7 +6,8 @@ class AppInput extends StatelessWidget {
   final bool obscure;
   final TextInputType? type;
 
-  const AppInput({super.key, required this.label, required this.controller, this.obscure=false, this.type});
+  const AppInput({super.key, required this.label, required this.controller,
+    this.obscure=false, this.type});
 
   @override
   Widget build(BuildContext context) {

@@ -1,5 +1,7 @@
-from fastapi import APIRouter, Depends, UploadFile, File, HTTPException, status
+from bson import ObjectId
+from fastapi import APIRouter, Depends, Response, UploadFile, File, HTTPException, status
 from datetime import datetime
+from ..models import PetIn, PetOut, PetUpdate  
 from uuid import uuid4
 from pathlib import Path
 from ..models import PetIn, PetOut
@@ -34,20 +36,19 @@ async def add_pet(payload: PetIn, user=Depends(get_current_user)):
         "age": payload.age,
         "notes": (payload.notes or "").strip(),
         "created_at": datetime.utcnow(),
-        "photo_url": None,   # NEW default
+        "photo_url": None,
     }
     res = await database.db.pets.insert_one(doc)
     doc["_id"] = res.inserted_id
     return to_pet_out(doc)
 
-# NEW: upload a photo (PNG/JPEG/WEBP). Optional feature.
 @router.post("/{pet_id}/photo", response_model=PetOut)
 async def upload_pet_photo(
     pet_id: str,
     file: UploadFile = File(...),
     user=Depends(get_current_user)
 ):
-    # Check pet belongs to user
+    # Check user
     from bson import ObjectId
     try:
         oid = ObjectId(pet_id)
@@ -58,7 +59,6 @@ async def upload_pet_photo(
     if not pet:
         raise HTTPException(status_code=404, detail="Pet not found")
 
-    # Validate content type
     ct = (file.content_type or "").lower()
     if ct not in {"image/jpeg", "image/png", "image/webp"}:
         raise HTTPException(status_code=400, detail="Only jpeg/png/webp allowed")
@@ -81,3 +81,49 @@ async def upload_pet_photo(
 
     pet = await database.db.pets.find_one({"_id": oid})
     return to_pet_out(pet)
+
+
+@router.patch("/{pet_id}", response_model=PetOut)
+async def update_pet(pet_id: str, payload: PetUpdate, user=Depends(get_current_user)):
+    try:
+        oid = ObjectId(pet_id)
+    except Exception:
+        raise HTTPException(status_code=404, detail="Pet not found")
+
+    pet = await database.db.pets.find_one({"_id": oid, "user_id": user["_id"]})
+    if not pet:
+        raise HTTPException(status_code=404, detail="Pet not found")
+
+    updates = {}
+    if payload.name is not None:  updates["name"]  = payload.name.strip()
+    if payload.type is not None:  updates["type"]  = payload.type.strip()
+    if payload.age  is not None:  updates["age"]   = payload.age
+    if payload.notes is not None: updates["notes"] = (payload.notes or "").strip()
+
+    if not updates:
+        return to_pet_out(pet) 
+
+    await database.db.pets.update_one({"_id": oid}, {"$set": updates})
+    pet = await database.db.pets.find_one({"_id": oid})
+    return to_pet_out(pet)
+
+@router.delete("/{pet_id}", status_code=204)
+async def delete_pet(pet_id: str, user=Depends(get_current_user)):
+    try:
+        oid = ObjectId(pet_id)
+    except Exception:
+        raise HTTPException(status_code=404, detail="Pet not found")
+
+    pet = await database.db.pets.find_one({"_id": oid, "user_id": user["_id"]})
+    if not pet:
+        raise HTTPException(status_code=404, detail="Pet not found")
+
+    if pet.get("photo_file_id"):
+        bucket = AsyncIOMotorGridFSBucket(database.db)
+        try:
+            await bucket.delete(pet["photo_file_id"])
+        except Exception:
+            pass
+
+    await database.db.pets.delete_one({"_id": oid})
+    return Response(status_code=204)

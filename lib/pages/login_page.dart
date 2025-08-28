@@ -54,7 +54,7 @@ class _LoginPageState extends State<LoginPage> {
           builder: (context, constraints) {
             final maxW = constraints.maxWidth < 480
                 ? constraints.maxWidth - 32
-                : 480.0; // cap width on big screens
+                : 480.0; 
 
             return SingleChildScrollView(
               padding: EdgeInsets.fromLTRB(
@@ -68,7 +68,6 @@ class _LoginPageState extends State<LoginPage> {
                     elevation: 2,
                     child: Padding(
                       padding: const EdgeInsets.all(20),
-                      // keep your Obx → Column here
                       child: Obx(() => Column(
                         mainAxisSize: MainAxisSize.min,
                         children: [

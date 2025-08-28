@@ -27,3 +27,9 @@ class PetOut(BaseModel):
     notes: str
     created_at: datetime
     photo_url: Optional[str] = None 
+
+class PetUpdate(BaseModel):
+    name: Optional[str] = None
+    type: Optional[str] = None
+    age: Optional[int] = Field(default=None, ge=0)
+    notes: Optional[str] = None

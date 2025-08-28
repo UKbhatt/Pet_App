@@ -34,5 +34,16 @@ class PetService {
     }
     throw Exception(ApiClient.errorFrom(res));
   }
-
+  Future<Pet> updatePet(String id, {String? name, String? type, int? age, String? notes}) async {
+    final body = <String, dynamic>{};
+    if (name != null) body['name'] = name;
+    if (type != null) body['type'] = type;
+    if (age != null) body['age'] = age;
+    if (notes != null) body['notes'] = notes;
+    final j = await ApiClient.patch('/pets/$id', body, auth: true);
+    return Pet.fromJson(j);
+  }
+  Future<void> deletePet(String id) async {
+    await ApiClient.delete('/pets/$id', auth: true);
+  }
 }

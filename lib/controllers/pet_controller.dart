@@ -44,4 +44,28 @@ class PetController extends GetxController {
       loading.value = false;
     }
   }
+
+  Future<void> editPet(Pet pet, {String? name, String? type, int? age, String? notes}) async {
+    try {
+      loading.value = true;
+      final updated = await _svc.updatePet(pet.id, name: name, type: type, age: age, notes: notes);
+      final idx = _pets.indexWhere((p) => p.id == pet.id);
+      if (idx != -1) _pets[idx] = updated;
+      Get.snackbar('Updated', '${updated.name} saved');
+    } catch (e) {
+      Get.snackbar('Error', e.toString());
+    } finally {
+      loading.value = false;
+    }
+  }
+
+  Future<void> deletePet(String id) async {
+    try {
+      await _svc.deletePet(id);
+      _pets.removeWhere((p) => p.id == id);
+      Get.snackbar('Deleted', 'Pet removed');
+    } catch (e) {
+      Get.snackbar('Error', e.toString());
+    }
+  }
 }

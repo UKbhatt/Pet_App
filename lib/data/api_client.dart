@@ -40,4 +40,18 @@ class ApiClient {
     if (res.statusCode >= 200 && res.statusCode < 300) return data;
     throw Exception(data['detail'] ?? 'Request failed (${res.statusCode})');
   }
+
+  static Future<Map<String, dynamic>> patch(String p, Map<String, dynamic> body, {bool auth=false}) async {
+    final res = await http.patch(Uri.parse('$baseUrl$p'), headers: _headers(withAuth: auth), body: jsonEncode(body));
+    final data = decode(res.body);
+    if (res.statusCode >= 200 && res.statusCode < 300) return data;
+    throw Exception(data['detail'] ?? 'Request failed (${res.statusCode})');
+  }
+
+  static Future<void> delete(String p, {bool auth=false}) async {
+    final res = await http.delete(Uri.parse('$baseUrl$p'), headers: _headers(withAuth: auth));
+    if (res.statusCode >= 200 && res.statusCode < 300) return;
+    final data = decode(res.body);
+    throw Exception(data['detail'] ?? 'Request failed (${res.statusCode})');
+  }
 }
