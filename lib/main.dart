@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'binding.dart';
 import 'routes.dart';
 import 'data/storage.dart';
 
@@ -25,6 +26,7 @@ class PetsApp extends StatelessWidget {
           border: OutlineInputBorder(),
         ),
       ),
+      initialBinding: AppBindings(),
       initialRoute: AppRoutes.initial,
       getPages: AppRoutes.pages,
     );

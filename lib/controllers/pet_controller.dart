@@ -1,4 +1,5 @@
 import 'package:get/get.dart';
+import 'package:image_picker/image_picker.dart';
 import '../models/pet.dart';
 import '../services/pet_service.dart';
 
@@ -26,12 +27,16 @@ class PetController extends GetxController {
     }
   }
 
-  Future<void> addPet(String name, String type, int age, String notes) async {
+  Future<void> addPet(String name, String type, int age, String notes, {XFile? image}) async {
     try {
       loading.value = true;
-      final pet = await _svc.addPet(name, type, age, notes);
-      _pets.insert(0, pet);
-      Get.back(); // close add page
+      final created = await _svc.addPet(name, type, age, notes);
+      Pet finalPet = created;
+      if (image != null) {
+        finalPet = await _svc.uploadPhoto(created.id, image);
+      }
+      _pets.insert(0, finalPet);
+      Get.back();
       Get.snackbar('Success', 'Pet added');
     } catch (e) {
       Get.snackbar('Error', e.toString());

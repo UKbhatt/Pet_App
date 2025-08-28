@@ -1,8 +1,10 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
+from pathlib import Path
 
 from .database import connect_db, close_db
-from .config import ALLOWED_ORIGINS
+from .config import ALLOWED_ORIGINS, UPLOAD_DIR
 from .routers import auth as auth_router
 from .routers import pets as pets_router
 
@@ -15,6 +17,10 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+upload_path = Path(UPLOAD_DIR)
+upload_path.mkdir(parents=True, exist_ok=True)
+app.mount("/uploads", StaticFiles(directory=str(upload_path)), name="uploads")
 
 @app.on_event("startup")
 async def startup():

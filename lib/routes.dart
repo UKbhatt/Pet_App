@@ -1,8 +1,8 @@
+import 'package:doggzi/pages/add_pet_page.dart';
+import 'package:doggzi/pages/login_page.dart';
+import 'package:doggzi/pages/pet_list_page.dart';
+import 'package:doggzi/pages/register_page.dart';
 import 'package:get/get.dart';
-import 'pages/login_page.dart';
-import 'pages/register_page.dart';
-import 'pages/pet_list_page.dart';
-import 'pages/add_pet_page.dart';
 
 class AppRoutes {
   static const login = '/login';
